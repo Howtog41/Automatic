@@ -5,7 +5,7 @@ from datetime import datetime
 import random  # For generating different messages
 
 # Set up your bot (in config.py)
-app = Client("my_bot", api_id="15502786", api_hash="bb32e00647b1bfe66e6cd298a2c66a5a", bot_token="5725026746:AAEdc1JgPoD_Pkgti_PQGdZJ0WqyCKGYrFk")
+app = Client("my_bot", api_id="15502786", api_hash="bb32e00647b1bfe66e6cd298a2c66a5a", bot_token="5725026746:AAES6vUC808RmEhh6_ZAZxwGeu603nZEAt4")
 
 # Function to send message
 def send_scheduled_message():
