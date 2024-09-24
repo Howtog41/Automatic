@@ -18,7 +18,7 @@ def send_scheduled_message():
         app.send_message(chat_id="CHANNEL_ID", text=message)
 
 # Function to schedule the posts
-def schedule_daily_post(time_of_post="22:57", post_count=3):
+def schedule_daily_post(time_of_post="22:59", post_count=3):
     # Schedule the post at the specified time
     schedule.every().day.at(time_of_post).do(send_scheduled_message)
     
