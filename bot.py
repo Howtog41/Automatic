@@ -5,7 +5,7 @@ from datetime import datetime
 import random  # For generating different messages
 
 # Set up your bot (in config.py)
-app = Client("my_bot", api_id="YOUR_API_ID", api_hash="YOUR_API_HASH", bot_token="YOUR_BOT_TOKEN")
+app = Client("my_bot", api_id="15502786", api_hash="bb32e00647b1bfe66e6cd298a2c66a5a", bot_token="5725026746:AAEdc1JgPoD_Pkgti_PQGdZJ0WqyCKGYrFk")
 
 # Function to send message
 def send_scheduled_message():
@@ -18,7 +18,7 @@ def send_scheduled_message():
         app.send_message(chat_id="CHANNEL_ID", text=message)
 
 # Function to schedule the posts
-def schedule_daily_post(time_of_post="10:00", post_count=3):
+def schedule_daily_post(time_of_post="10:51", post_count=3):
     # Schedule the post at the specified time
     schedule.every().day.at(time_of_post).do(send_scheduled_message)
     
