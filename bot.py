@@ -15,10 +15,10 @@ def send_scheduled_message():
         message = random.choice(messages)
         
         # Send message to a specific channel
-        app.send_message(chat_id="CHANNEL_ID", text=message)
+        app.send_message(chat_id="-1001911273978", text=message)
 
 # Function to schedule the posts
-def schedule_daily_post(time_of_post="23:04", post_count=3):
+def schedule_daily_post(time_of_post="23:07", post_count=3):
     # Schedule the post at the specified time
     schedule.every().day.at(time_of_post).do(send_scheduled_message)
     
@@ -28,7 +28,7 @@ def schedule_daily_post(time_of_post="23:04", post_count=3):
 
 # Start the schedule
 def run_bot():
-    schedule_daily_post(time_of_post="23:04", post_count=3)  # Set your time and post count here
+    schedule_daily_post(time_of_post="23:07", post_count=3)  # Set your time and post count here
     
     while True:
         schedule.run_pending()
