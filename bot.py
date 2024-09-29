@@ -63,15 +63,16 @@ async def target_channel_handler(update: Update, context):
     return ConversationHandler.END
 
 # Handler for message count
+# Message count handler
 async def message_count_handler(update: Update, context):
-    global MESSAGE_COUNT
+    global MESSAGE_COUNT  # Declare MESSAGE_COUNT as global to modify the variable
     try:
         MESSAGE_COUNT = int(update.message.text)
-        await update.message.reply_text(f"Message count set to {MESSAGE_COUNT}. Now, use /set_time to set the forwarding time.")
-        return ConversationHandler.END
+        await update.message.reply_text(f"Message count set to {MESSAGE_COUNT}. Now set the time using /set_time.")
+        return SET_TIME
     except ValueError:
-        await update.message.reply_text("Please send a valid number for message count.")
-        return SET_COUNT
+        await update.message.reply_text("Invalid number. Please send a valid number for message count.")
+        return SET_MESSAGE_COUNT
 
 # Handler for time setting
 async def time_handler(update: Update, context):
@@ -164,7 +165,7 @@ if __name__ == '__main__':
         states={
             SET_SOURCE_CHANNEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, source_channel_handler)],
             SET_TARGET_CHANNEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, target_channel_handler)],
-            SET_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, message_count_handler)],
+            SET_MESSAGE_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, message_count_handler)],
             SET_TIME: [MessageHandler(filters.TEXT & ~filters.COMMAND, time_handler)],
             SET_TIMEZONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, timezone_handler)]
         },
