@@ -48,15 +48,24 @@ async def set_message_count(update: Update, context):
     return SET_MESSAGE_COUNT
 
 # Handler to process message count input
+# Handler to process message count input
 async def message_count_handler(update: Update, context):
     global MESSAGE_COUNT
     try:
+        # Convert the input text to an integer and store it as MESSAGE_COUNT
         MESSAGE_COUNT = int(update.message.text)
-        await update.message.reply_text(f"Message count set to {MESSAGE_COUNT}. Now set the time using /set_time.")
-        return SET_TIME
+        
+        # Acknowledge the count has been set
+        await update.message.reply_text(f"Message count set to {MESSAGE_COUNT}. Now, please set the time using /set_time.")
+        
+        # End the conversation flow for this part
+        return ConversationHandler.END
+    
     except ValueError:
-        await update.message.reply_text("Please send a valid number for message count.")
+        # If the user enters something that is not a valid number, send an error message
+        await update.message.reply_text("Please send a valid number for the message count.")
         return SET_MESSAGE_COUNT
+
 
 # Command to set time
 async def set_time(update: Update, context):
