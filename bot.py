@@ -1,3 +1,4 @@
+import pytz
 import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ConversationHandler, MessageHandler, filters
@@ -13,10 +14,15 @@ SOURCE_CHANNEL = None
 TARGET_CHANNEL = None
 MESSAGE_COUNT = None
 FORWARD_TIME = None
+USER_TIMEZONE = None
 scheduler = BackgroundScheduler()
 
+# Timezones
+SERVER_TZ = pytz.timezone('UTC')  # Set this to the server's timezone, e.g., UTC
+LOCAL_TZ = pytz.timezone('Asia/Kolkata')  # Set this to your local timezone
+
 # Conversation states
-SET_SOURCE_CHANNEL, SET_TARGET_CHANNEL, SET_COUNT, SET_TIME = range(4)
+SET_SOURCE_CHANNEL, SET_TARGET_CHANNEL, SET_COUNT, SET_TIME, SET_TIMEZONE = range(5)
 
 # Command /start
 async def start(update: Update, context):
@@ -34,8 +40,13 @@ async def set_message_count(update: Update, context):
 
 # Command /set_time
 async def set_time(update: Update, context):
-    await update.message.reply_text("Please set the time for forwarding messages in HH:MM (24-hour format).")
+    await update.message.reply_text("Please set the time for forwarding messages in HH:MM (24-hour format) in your local time zone.")
     return SET_TIME
+
+# Command /set_timezone
+async def set_timezone(update: Update, context):
+    await update.message.reply_text("Please send your local timezone (e.g., 'Asia/Kolkata', 'America/New_York').")
+    return SET_TIMEZONE
 
 # Handler for SET_SOURCE_CHANNEL
 async def source_channel_handler(update: Update, context):
@@ -66,12 +77,33 @@ async def message_count_handler(update: Update, context):
 async def time_handler(update: Update, context):
     global FORWARD_TIME
     try:
-        FORWARD_TIME = datetime.datetime.strptime(update.message.text, "%H:%M").time()
-        await update.message.reply_text(f"Forward time set to {FORWARD_TIME}. Now, use /start_forwarding to begin.")
+        # Parse the user input time (local time)
+        local_time = datetime.datetime.strptime(update.message.text, "%H:%M").time()
+        now = datetime.datetime.now(LOCAL_TZ)
+        user_time = datetime.datetime.combine(now.date(), local_time)
+        user_time = LOCAL_TZ.localize(user_time)  # Localize to user's timezone
+
+        # Convert to server timezone
+        server_time = user_time.astimezone(SERVER_TZ)
+        FORWARD_TIME = server_time.time()
+
+        await update.message.reply_text(f"Forward time set to {FORWARD_TIME} in server time ({SERVER_TZ}). Now, use /start_forwarding to begin.")
         return ConversationHandler.END
     except ValueError:
         await update.message.reply_text("Please send the time in HH:MM format.")
         return SET_TIME
+
+# Handler for timezone setting
+async def timezone_handler(update: Update, context):
+    global LOCAL_TZ
+    try:
+        USER_TIMEZONE = update.message.text
+        LOCAL_TZ = pytz.timezone(USER_TIMEZONE)
+        await update.message.reply_text(f"Timezone set to {USER_TIMEZONE}. Now, use /set_time to set the forwarding time.")
+        return ConversationHandler.END
+    except Exception:
+        await update.message.reply_text("Invalid timezone. Please enter a valid timezone.")
+        return SET_TIMEZONE
 
 # Forward messages function
 async def forward_messages(context):
@@ -92,7 +124,7 @@ async def start_forwarding(update: Update, context):
         # Schedule the message forwarding at the set time every day
         scheduler.add_job(forward_messages, 'cron', hour=FORWARD_TIME.hour, minute=FORWARD_TIME.minute, args=[context])
         scheduler.start()
-        await update.message.reply_text(f"Forwarding scheduled at {FORWARD_TIME} daily.")
+        await update.message.reply_text(f"Forwarding scheduled at {FORWARD_TIME} daily in server time ({SERVER_TZ}).")
     else:
         await update.message.reply_text("Please make sure to set the source channel, target channel, message count, and time first.")
 
@@ -116,6 +148,7 @@ if __name__ == '__main__':
             SET_TARGET_CHANNEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, target_channel_handler)],
             SET_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, message_count_handler)],
             SET_TIME: [MessageHandler(filters.TEXT & ~filters.COMMAND, time_handler)],
+            SET_TIMEZONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, timezone_handler)]
         },
         fallbacks=[CommandHandler('cancel', start)]
     )
@@ -125,6 +158,7 @@ if __name__ == '__main__':
     application.add_handler(conv_handler)
     application.add_handler(CommandHandler('set_message_count', set_message_count))
     application.add_handler(CommandHandler('set_time', set_time))
+    application.add_handler(CommandHandler('set_timezone', set_timezone))
     application.add_handler(CommandHandler('start_forwarding', start_forwarding))
     application.add_handler(CommandHandler('stop_forwarding', stop_forwarding))
     application.add_error_handler(error_handler)
