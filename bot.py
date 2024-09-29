@@ -124,15 +124,28 @@ async def forward_messages(context):
         logger.error(f"Error forwarding messages: {e}")
 
 # Start forwarding
+# Start forwarding command
 async def start_forwarding(update: Update, context):
-    if SOURCE_CHANNEL and TARGET_CHANNEL and MESSAGE_COUNT and FORWARD_TIME:
-        # Schedule the message forwarding at the set time every day
-        scheduler.add_job(forward_messages, 'cron', hour=FORWARD_TIME.hour, minute=FORWARD_TIME.minute, args=[context])
-        scheduler.start()
-        await update.message.reply_text(f"Forwarding scheduled at {FORWARD_TIME} daily in server time ({SERVER_TZ}).")
-    else:
-        await update.message.reply_text("Please make sure to set the source channel, target channel, message count, and time first.")
-
+    # Debug: Check if all the required variables are set
+    if SOURCE_CHANNEL is None:
+        await update.message.reply_text("Source channel not set. Please use /set_channel to set the source channel.")
+        return
+    if TARGET_CHANNEL is None:
+        await update.message.reply_text("Target channel not set. Please use /set_channel to set the target channel.")
+        return
+    if MESSAGE_COUNT is None:
+        await update.message.reply_text("Message count not set. Please use /set_message_count to set the number of messages.")
+        return
+    if FORWARD_TIME is None:
+        await update.message.reply_text("Forwarding time not set. Please use /set_time to set the time for forwarding.")
+        return
+    
+    # If all checks pass, start the forwarding process
+    await update.message.reply_text(f"Starting message forwarding from {SOURCE_CHANNEL} to {TARGET_CHANNEL} daily at {FORWARD_TIME} server time.")
+    
+    # Schedule the message forwarding job
+    scheduler.add_job(forward_messages, 'cron', hour=FORWARD_TIME.hour, minute=FORWARD_TIME.minute, args=[context])
+    scheduler.start()
 # Stop forwarding
 async def stop_forwarding(update: Update, context):
     scheduler.remove_all_jobs()
