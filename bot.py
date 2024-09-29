@@ -16,7 +16,7 @@ FORWARD_TIME = None
 scheduler = BackgroundScheduler()
 
 # Conversation states
-SET_CHANNEL, SET_COUNT, SET_TIME = range(3)
+SET_SOURCE_CHANNEL, SET_TARGET_CHANNEL, SET_COUNT, SET_TIME = range(4)
 
 # Command /start
 async def start(update: Update, context):
@@ -24,8 +24,8 @@ async def start(update: Update, context):
 
 # Command /set_channel
 async def set_channel(update: Update, context):
-    await update.message.reply_text("Please send the source channel ID or username.")
-    return SET_CHANNEL
+    await update.message.reply_text("Please send the source channel ID or username (starting with @).")
+    return SET_SOURCE_CHANNEL
 
 # Command /set_message_count
 async def set_message_count(update: Update, context):
@@ -37,18 +37,18 @@ async def set_time(update: Update, context):
     await update.message.reply_text("Please set the time for forwarding messages in HH:MM (24-hour format).")
     return SET_TIME
 
-# Handler for SET_CHANNEL
-async def channel_handler(update: Update, context):
-    global SOURCE_CHANNEL, TARGET_CHANNEL
+# Handler for SET_SOURCE_CHANNEL
+async def source_channel_handler(update: Update, context):
+    global SOURCE_CHANNEL
     SOURCE_CHANNEL = update.message.text
-    await update.message.reply_text(f"Source channel set to: {SOURCE_CHANNEL}. Now send the target channel ID or username.")
-    return SET_CHANNEL
+    await update.message.reply_text(f"Source channel set to: {SOURCE_CHANNEL}. Now, send the target channel ID or username (starting with @).")
+    return SET_TARGET_CHANNEL
 
-# Handler for target channel (after source channel is set)
+# Handler for SET_TARGET_CHANNEL
 async def target_channel_handler(update: Update, context):
     global TARGET_CHANNEL
     TARGET_CHANNEL = update.message.text
-    await update.message.reply_text(f"Target channel set to: {TARGET_CHANNEL}. Now use /set_message_count to set how many messages to forward.")
+    await update.message.reply_text(f"Target channel set to: {TARGET_CHANNEL}. Now, use /set_message_count to set the number of messages to forward.")
     return ConversationHandler.END
 
 # Handler for message count
@@ -56,7 +56,7 @@ async def message_count_handler(update: Update, context):
     global MESSAGE_COUNT
     try:
         MESSAGE_COUNT = int(update.message.text)
-        await update.message.reply_text(f"Message count set to {MESSAGE_COUNT}. Now use /set_time to set the forwarding time.")
+        await update.message.reply_text(f"Message count set to {MESSAGE_COUNT}. Now, use /set_time to set the forwarding time.")
         return ConversationHandler.END
     except ValueError:
         await update.message.reply_text("Please send a valid number for message count.")
@@ -67,7 +67,7 @@ async def time_handler(update: Update, context):
     global FORWARD_TIME
     try:
         FORWARD_TIME = datetime.datetime.strptime(update.message.text, "%H:%M").time()
-        await update.message.reply_text(f"Forward time set to {FORWARD_TIME}. Use /start_forwarding to begin.")
+        await update.message.reply_text(f"Forward time set to {FORWARD_TIME}. Now, use /start_forwarding to begin.")
         return ConversationHandler.END
     except ValueError:
         await update.message.reply_text("Please send the time in HH:MM format.")
@@ -89,11 +89,12 @@ async def forward_messages(context):
 # Start forwarding
 async def start_forwarding(update: Update, context):
     if SOURCE_CHANNEL and TARGET_CHANNEL and MESSAGE_COUNT and FORWARD_TIME:
+        # Schedule the message forwarding at the set time every day
         scheduler.add_job(forward_messages, 'cron', hour=FORWARD_TIME.hour, minute=FORWARD_TIME.minute, args=[context])
         scheduler.start()
         await update.message.reply_text(f"Forwarding scheduled at {FORWARD_TIME} daily.")
     else:
-        await update.message.reply_text("Please make sure to set the channel, message count, and time first.")
+        await update.message.reply_text("Please make sure to set the source channel, target channel, message count, and time first.")
 
 # Stop forwarding
 async def stop_forwarding(update: Update, context):
@@ -111,7 +112,8 @@ if __name__ == '__main__':
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('set_channel', set_channel)],
         states={
-            SET_CHANNEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, channel_handler)],
+            SET_SOURCE_CHANNEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, source_channel_handler)],
+            SET_TARGET_CHANNEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, target_channel_handler)],
             SET_COUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, message_count_handler)],
             SET_TIME: [MessageHandler(filters.TEXT & ~filters.COMMAND, time_handler)],
         },
