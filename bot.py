@@ -78,19 +78,24 @@ async def time_handler(update: Update, context):
     global FORWARD_TIME
     try:
         # Parse the user input time (local time)
-        local_time = datetime.datetime.strptime(update.message.text, "%H:%M").time()
-        now = datetime.datetime.now(LOCAL_TZ)
-        user_time = datetime.datetime.combine(now.date(), local_time)
-        user_time = LOCAL_TZ.localize(user_time)  # Localize to user's timezone
+        local_time_str = update.message.text  # Get the text that the user sent
+        local_time = datetime.datetime.strptime(local_time_str, "%H:%M").time()  # Convert the string to time
 
-        # Convert to server timezone
+        now = datetime.datetime.now(LOCAL_TZ)  # Get the current date and time in the user's timezone
+        user_time = datetime.datetime.combine(now.date(), local_time)  # Combine current date with user time
+
+        # Localize the user time to the user's timezone
+        user_time = LOCAL_TZ.localize(user_time)
+
+        # Convert the user time to server timezone
         server_time = user_time.astimezone(SERVER_TZ)
-        FORWARD_TIME = server_time.time()
+        FORWARD_TIME = server_time.time()  # Store the time in server timezone
 
-        await update.message.reply_text(f"Forward time set to {FORWARD_TIME} in server time ({SERVER_TZ}). Now, use /start_forwarding to begin.")
+        await update.message.reply_text(f"Forward time set to {FORWARD_TIME} in server time ({SERVER_TZ}).")
         return ConversationHandler.END
     except ValueError:
-        await update.message.reply_text("Please send the time in HH:MM format.")
+        # If time format is wrong
+        await update.message.reply_text("Invalid time format. Please send the time in HH:MM format.")
         return SET_TIME
 
 # Handler for timezone setting
@@ -150,12 +155,11 @@ if __name__ == '__main__':
             SET_TIME: [MessageHandler(filters.TEXT & ~filters.COMMAND, time_handler)],
             SET_TIMEZONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, timezone_handler)]
         },
-        fallbacks=[CommandHandler('cancel', start)]
+        fallbacks=[CommandHandler('start', start)]
     )
 
-    # Adding command handlers to the bot
-    application.add_handler(CommandHandler('start', start))
     application.add_handler(conv_handler)
+    application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('set_message_count', set_message_count))
     application.add_handler(CommandHandler('set_time', set_time))
     application.add_handler(CommandHandler('set_timezone', set_timezone))
@@ -164,5 +168,4 @@ if __name__ == '__main__':
     application.add_error_handler(error_handler)
 
     # Start the bot
-    logger.info("Bot started")
     application.run_polling()
