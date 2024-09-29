@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Global Variables
 SOURCE_CHANNEL = None
 TARGET_CHANNEL = None
-MESSAGE_COUNT = None
+SET_MESSAGE_COUNT = None
 FORWARD_TIME = None
 USER_TIMEZONE = None
 scheduler = BackgroundScheduler()
