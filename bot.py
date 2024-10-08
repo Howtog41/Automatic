@@ -122,7 +122,7 @@ async def main():
 
     # Start the Bot
     await application.start()
-    await application.wait_for_shutdown()
+    
 
 
 if __name__ == '__main__':
