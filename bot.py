@@ -122,7 +122,7 @@ async def main():
 
     # Start the Bot
     await application.start()
-    
+    application.run_polling()
 
 
 if __name__ == '__main__':
