@@ -117,9 +117,13 @@ async def main():
     application.add_handler(CallbackQueryHandler(handle_task_selection))
     application.add_handler(CallbackQueryHandler(handle_task_action))
 
+    # Initialize the application
+    await application.initialize()  # <--- This is the missing initialization step
+
     # Start the Bot
     await application.start()
     await application.wait_for_shutdown()
+
 
 if __name__ == '__main__':
     import asyncio
