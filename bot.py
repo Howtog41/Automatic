@@ -118,12 +118,10 @@ async def main():
     application.add_handler(CallbackQueryHandler(handle_task_action))
 
     # Initialize the application
-    await application.initialize()  # <--- This is the missing initialization step
+    await application.initialize()  # <--- This is the missing initialization ste
 
-    # Start the Bot
-    await application.start()
-    await application.wait_for_shutdown()
-
+    # Start the Bot and handle updates (this replaces wait_for_shutdown)
+    await application.start_polling()
 
 
 if __name__ == '__main__':
