@@ -19,10 +19,9 @@ async def fetch_messages():
     global messages
     print("Fetching messages...")
     try:
-        updates = await bot.get_updates()  # Fetch updates asynchronously
-        for update in updates:
-            if update.message and update.message.chat and update.message.chat.username == SOURCE_CHANNEL_ID.strip('@'):
-                messages.append(update.message.text)
+        async for message in bot.get_chat_history(chat_id=SOURCE_CHANNEL_ID, limit=50):  # Fetch last 50 messages
+            if message.text:  # Only consider text messages
+                messages.append(message.text)
         print(f"Fetched {len(messages)} messages.")
     except Exception as e:
         print(f"Error in fetch_messages: {e}")
