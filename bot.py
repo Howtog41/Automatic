@@ -1,4 +1,5 @@
 import asyncio
+from telegram.ext import Application, ContextTypes
 from telegram import Bot
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
