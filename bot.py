@@ -11,6 +11,7 @@ scheduler = BlockingScheduler()
 # Messages store karne ke liye list
 messages = []
 
+# Function: Messages fetch karna
 def fetch_messages():
     global messages
     updates = bot.get_updates()
@@ -18,18 +19,23 @@ def fetch_messages():
         if update.message and update.message.chat.username == 'source_channel':
             messages.append(update.message.text)
 
+# Function: Messages post karna
 def post_messages():
     global messages
     if len(messages) >= 10:
         for _ in range(10):
             msg = messages.pop(0)
-            bot.send_message(chat_id=DESTINATION_CHANNEL_ID, text=msg)
+            try:
+                bot.send_message(chat_id=DESTINATION_CHANNEL_ID, text=msg)
+            except Exception as e:
+                print(f"Error: {e}")
 
-post_messages()  
-# Har roz messages fetch karna
-scheduler.add_job(fetch_messages, 'interval', hours=24)
+# Immediate execution ke liye
+fetch_messages()  # Pehle messages fetch karein
+post_messages()   # Turant messages post karein
 
-# Har roz post karna
-scheduler.add_job(post_messages, 'interval', hours=24)
+# Scheduler setup
+scheduler.add_job(fetch_messages, 'interval', hours=24)  # Regular fetching
+scheduler.add_job(post_messages, 'interval', hours=24)   # Regular posting
 
 scheduler.start()
