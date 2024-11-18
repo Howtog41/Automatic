@@ -1,28 +1,28 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+import telebot
+import time
 
-BOT_TOKEN = "5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ"
-SOURCE_CHANNEL_ID = "@Old_Bollywood_movie_HD"  # Replace with source channel username or ID
-DESTINATION_CHANNEL_ID = "@LKD_Latest_Korean_Dramaa"  # Replace with destination channel username or ID
+# अपना API टोकन यहां डालें
+bot = telebot.TeleBot("-10019847687325645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ")
 
-async def forward_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.channel_post:  # Ensure it is a message from a channel
-        await context.bot.forward_message(
-            chat_id=DESTINATION_CHANNEL_ID,
-            from_chat_id=update.channel_post.chat_id,
-            message_id=update.channel_post.message_id,
-        )
-        print(f"Forwarded message: {update.channel_post.text}")
+# जिस चैनल से मैसेज लेने हैं उसका ID
+source_chat_id = "@Old_Bollywood_movie_HD" # उदाहरण के लिए
 
-def main():
-    # Create application
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+# जिस चैनल पर मैसेज पोस्ट करने हैं उसका ID
+destination_chat_id = "@LKD_Latest_Korean_Dramaa" # उदाहरण के लिए
 
-    # Add handler for channel posts
-    app.add_handler(MessageHandler(filters.ChannelUpdate.CHAT_POSTS, forward_message))
+def send_messages():
+    messages = bot.get_chat_history(chat_id=source_chat_id)
+    for message in messages[:10]:
+        bot.send_message(chat_id=destination_chat_id, text=message.text)
 
-    print("Bot is running...")
-    app.run_polling()
+while True:
+    send_messages()
+    time.sleep(86400)  # हर 24 घंटे में एक बार चलाएगा
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    while True:
+        try:
+            bot.polling(none_stop=True)
+        except Exception as e:
+            print(f"Error: {e}")
+            time.sleep(10)
