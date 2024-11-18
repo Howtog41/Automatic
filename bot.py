@@ -8,53 +8,51 @@ API_TOKEN = '5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ'
 SOURCE_CHANNEL_ID = '-1001984768732'
 DESTINATION_CHANNEL_ID = '-1002115327472'
 
-bot = Bot(token=API_TOKEN)
 scheduler = AsyncIOScheduler()
-
-# Messages store karne ke liye list
 messages = []
 
-# Function to fetch messages from the source channel
-async def fetch_messages():
+# Function to fetch message history
+async def fetch_messages(application: Application):
     global messages
     print("Fetching messages...")
     try:
-        async for message in bot.get_chat_history(chat_id=SOURCE_CHANNEL_ID, limit=50):  # Fetch last 50 messages
-            if message.text:  # Only consider text messages
-                messages.append(message.text)
+        async with application.bot:
+            async for message in application.bot.get_chat_history(chat_id=SOURCE_CHANNEL_ID, limit=50):  # Fetch last 50 messages
+                if message.text:  # Only consider text messages
+                    messages.append(message.text)
         print(f"Fetched {len(messages)} messages.")
     except Exception as e:
         print(f"Error in fetch_messages: {e}")
 
-# Function to post messages to the destination channel
-async def post_messages():
+# Function to post messages to destination channel
+async def post_messages(application: Application):
     global messages
     if len(messages) >= 10:
         print("Posting messages...")
         for _ in range(10):
             msg = messages.pop(0)
             try:
-                await bot.send_message(chat_id=DESTINATION_CHANNEL_ID, text=msg)
+                await application.bot.send_message(chat_id=DESTINATION_CHANNEL_ID, text=msg)
             except Exception as e:
                 print(f"Error in post_messages: {e}")
         print("Posted 10 messages.")
 
-# Main function to initialize and run the bot
+# Main function to run the bot
 async def main():
-    # Fetch messages once at the start
-    await fetch_messages()
-    await post_messages()
+    app = ApplicationBuilder().token(API_TOKEN).build()
 
-    # Scheduler for regular operations
-    scheduler.add_job(fetch_messages, 'interval', hours=24)  # Fetch every 24 hours
-    scheduler.add_job(post_messages, 'interval', hours=24)   # Post every 24 hours
+    # Fetch and post messages immediately
+    await fetch_messages(app)
+    await post_messages(app)
+
+    # Schedule jobs for daily operations
+    scheduler.add_job(fetch_messages, 'interval', hours=24, args=(app,))
+    scheduler.add_job(post_messages, 'interval', hours=24, args=(app,))
     scheduler.start()
 
-    # Keep the script running
     print("Bot is running...")
     await asyncio.Event().wait()
 
-# Start the asyncio loop
+# Run the asyncio loop
 if __name__ == "__main__":
     asyncio.run(main())
-
