@@ -4,8 +4,8 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 API_TOKEN = '5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ'
-SOURCE_CHANNEL_ID = '@Old_Bollywood_movie_HD'
-DESTINATION_CHANNEL_ID = '@LKD_Latest_Korean_Dramaa'
+SOURCE_CHANNEL_ID = '-1001984768732'
+DESTINATION_CHANNEL_ID = '-1002115327472'
 
 bot = Bot(token=API_TOKEN)
 scheduler = AsyncIOScheduler()
