@@ -4,13 +4,14 @@ from telegram.ext import ApplicationBuilder
 API_TOKEN = '5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ'
 SOURCE_CHANNEL_ID = -1001984768732  # Replace with source channel ID (include -100 prefix if private)
 
+ 
 async def fetch_messages(application):
     try:
         bot = application.bot
         messages = []
         print("Fetching messages...")
 
-        # Fetch the latest 50 messages from the channel
+        # Fetch the latest 50 messages using iter_chat_messages
         async for message in bot.iter_chat_messages(chat_id=SOURCE_CHANNEL_ID, limit=50):
             if message.text:  # Only consider text messages
                 messages.append(message.text)
