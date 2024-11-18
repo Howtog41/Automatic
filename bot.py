@@ -1,29 +1,28 @@
-from pyrogram import Client
+from telegram import Update
+from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-# Telegram API credentials
-API_ID = '15502786'  # Replace with your API ID
-API_HASH = 'bb32e00647b1bfe66e6cd298a2c66a5a'  # Replace with your API Hash
-BOT_TOKEN = '5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ'  # Replace with your bot token
+BOT_TOKEN = "5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ"
+SOURCE_CHANNEL_ID = "@Old_Bollywood_movie_HD"  # Replace with source channel username or ID
+DESTINATION_CHANNEL_ID = "@LKD_Latest_Korean_Dramaa"  # Replace with destination channel username or ID
 
-# Source channel information
-SOURCE_CHANNEL = "@LKD_Latest_Korean_Dramaa"  # Replace with source channel username or ID
+async def forward_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.channel_post:  # Ensure it is a message from a channel
+        await context.bot.forward_message(
+            chat_id=DESTINATION_CHANNEL_ID,
+            from_chat_id=update.channel_post.chat_id,
+            message_id=update.channel_post.message_id,
+        )
+        print(f"Forwarded message: {update.channel_post.text}")
 
-# Create Pyrogram Client
-app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+def main():
+    # Create application
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-async def fetch_messages():
-    async with app:
-        print("Fetching messages...")
-        messages = []
-        async for message in app.get_chat_history(SOURCE_CHANNEL, limit=50):
-            if message.text:
-                messages.append(message.text)
-        
-        print(f"Fetched {len(messages)} messages:")
-        for msg in messages:
-            print(msg)  # Print fetched messages
-        return messages
+    # Add handler for channel posts
+    app.add_handler(MessageHandler(filters.ChannelUpdate.CHAT_POSTS, forward_message))
+
+    print("Bot is running...")
+    app.run_polling()
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(fetch_messages())
+    main()
