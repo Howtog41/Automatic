@@ -1,34 +1,29 @@
-import asyncio
-from telegram.ext import ApplicationBuilder
+from pyrogram import Client
 
-API_TOKEN = '5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ'
-SOURCE_CHANNEL_ID = -1001984768732  # Replace with source channel ID (include -100 prefix if private)
+# Telegram API credentials
+API_ID = '15502786'  # Replace with your API ID
+API_HASH = 'bb32e00647b1bfe66e6cd298a2c66a5a'  # Replace with your API Hash
+BOT_TOKEN = '5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ'  # Replace with your bot token
 
- 
-async def fetch_messages(application):
-    try:
-        bot = application.bot
-        messages = []
+# Source channel information
+SOURCE_CHANNEL = "-1001984768732"  # Replace with source channel username or ID
+
+# Create Pyrogram Client
+app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
+async def fetch_messages():
+    async with app:
         print("Fetching messages...")
-
-        # Fetch the latest 50 messages using iter_chat_messages
-        async for message in bot.iter_chat_messages(chat_id=SOURCE_CHANNEL_ID, limit=50):
-            if message.text:  # Only consider text messages
+        messages = []
+        async for message in app.get_chat_history(SOURCE_CHANNEL, limit=50):
+            if message.text:
                 messages.append(message.text)
-
+        
         print(f"Fetched {len(messages)} messages:")
         for msg in messages:
-            print(msg)  # Print each fetched message
+            print(msg)  # Print fetched messages
         return messages
-    except Exception as e:
-        print(f"Error while fetching messages: {e}")
-
-async def main():
-    # Build application
-    app = ApplicationBuilder().token(API_TOKEN).build()
-
-    # Fetch messages
-    await fetch_messages(app)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import asyncio
+    asyncio.run(fetch_messages())
