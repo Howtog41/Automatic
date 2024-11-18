@@ -18,7 +18,7 @@ async def fetch_messages():
     global messages
     print("Fetching messages...")
     try:
-        async for message in bot.get_chat(chat_id=SOURCE_CHANNEL_ID # Fetch last 50 messages
+        async for message in bot.get_chat(chat_id=SOURCE_CHANNEL_ID) # Fetch last 50 messages
             if message.text:  # Only consider text messages
                 messages.append(message.text)
         print(f"Fetched {len(messages)} messages.")
