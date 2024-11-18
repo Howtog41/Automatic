@@ -1,5 +1,6 @@
 from telegram import Bot
 from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 API_TOKEN = '5645711998:AAE8oAHzKi07iqcydKPnuFjzknlVa2MxxUQ'
 SOURCE_CHANNEL_ID = '@Old_Bollywood_movie_HD'
