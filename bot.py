@@ -11,7 +11,7 @@ async def fetch_messages(application):
         print("Fetching messages...")
 
         # Fetch the latest 50 messages from the channel
-        async for message in bot.get_chat_history(chat_id=SOURCE_CHANNEL_ID, limit=50):
+        async for message in bot.iter_chat_messages(chat_id=SOURCE_CHANNEL_ID, limit=50):
             if message.text:  # Only consider text messages
                 messages.append(message.text)
 
