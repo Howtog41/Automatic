@@ -25,7 +25,6 @@ def post_messages():
             msg = messages.pop(0)
             bot.send_message(chat_id=DESTINATION_CHANNEL_ID, text=msg)
 
-fetch_messages()  # Messages fetch karein
 post_messages()  
 # Har roz messages fetch karna
 scheduler.add_job(fetch_messages, 'interval', hours=24)
